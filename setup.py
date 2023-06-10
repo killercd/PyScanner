@@ -1,11 +1,11 @@
 from setuptools import setup
 
 setup(
-    name='pyscanner',
+    name='psychom-scanner',
     version='0.1',
     author='killercd',
     author_email='killercd@gmail.com',
-    description='pyscanner is a python library which helps in security scanner creation',
-    packages=['pyscanner'],
+    description='psychom scanner is a python library which helps in security scanner creation',
+    packages=['psychom_scanner'],
    
 )
