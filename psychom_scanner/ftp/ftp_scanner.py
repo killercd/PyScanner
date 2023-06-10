@@ -1,9 +1,6 @@
 from ftplib import FTP
-from ..tcp.IPScanner import IPUtils
-import time
-from threading import Thread
 from socket import *
-
+from ..threadscan.threadscan import ThreadScanner
 
 
 class FtpServiceResult():
@@ -45,26 +42,22 @@ class FtpScanner():
 
     """
     def __init__(self, max_thread, timeout, ftp_port=21):
-        self.forced_exit = False
-        self.max_thread = max_thread
-        self.thread_list = {}
-        self.timeout = timeout
-        self.ftp_port = ftp_port
-        self.return_ips = []
         self.anonymous_usr = "anonymous"
         self.anonymous_pwd = "mailme@pass.com"
+        self.thread_scanner = ThreadScanner(max_thread,timeout,ftp_port, self._scan_ip)
 
     def _scan_ip(self, ip):
         """Try to connect to a specific ip address
         :param ip: ip address
         """
         try:
-
             ftp = FTP()
-            ftp.connect(ip, port=self.ftp_port, timeout=self.timeout)
-            
-            result = FtpServiceResult(ip,self.ftp_port,ftp.getwelcome(),False,"","")
-            
+            ftp.connect(ip, 
+                        port=self.thread_scanner.port, 
+                        timeout=self.thread_scanner.timeout)
+
+            result = FtpServiceResult(ip,self.thread_scanner.port,ftp.getwelcome(),False,"","")
+
             try:
                 ftp.login(self.anonymous_usr, self.anonymous_pwd)
                 result.success_login=True
@@ -73,46 +66,19 @@ class FtpScanner():
                 
             except Exception as ex:
                 pass
-            if not ip in self.return_ips:
-                self.return_ips.append(result)
+            if not ip in self.thread_scanner.return_ips:
+                self.thread_scanner.return_ips.append(result)
 
             
         except:
             ftp.close()
-            if ip in self.thread_list:
-                del self.thread_list[ip]
+            if ip in self.thread_scanner.thread_list:
+                del self.thread_scanner.thread_list[ip]
             return
         finally:
             ftp.close()
             
-        del self.thread_list[ip]
+        del self.thread_scanner.thread_list[ip]
     
-    def scan(self, start_ip, stop_ip):
-        
-        """Start ftp scanner
-        :param start_ip: Start ip
-        :param end_ip: End ip
-        
-        :return: returns a list of ip
-        """
-        
-        while start_ip!=stop_ip:
-            if self.forced_exit:
-                return
-            
-            if len(self.thread_list)>=self.max_thread:
-                pass
-            else:
-                ip = start_ip
-                t = Thread(target=self._scan_ip, args=(ip,))
-                t.start()
-                self.thread_list[ip] = t
-        
-            start_ip = IPUtils._incIP(start_ip)
-            while len(self.thread_list)>0:
-                pass
-        
-        if ip in self.thread_list:
-            del self.thread_list[ip]
-        
-        return self.return_ips
+    def scan(self, start_ip, end_ip):
+        return self.thread_scanner.scan(start_ip, end_ip)
