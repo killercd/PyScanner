@@ -1,4 +1,5 @@
 from ftplib import FTP
+from ..tcp.IPScanner import IPUtils
 import time
 from threading import Thread
 from socket import *
@@ -100,54 +101,18 @@ class FtpScanner():
                 return
             
             if len(self.thread_list)>=self.max_thread:
-                time.sleep(2)
+                pass
             else:
                 ip = start_ip
                 t = Thread(target=self._scan_ip, args=(ip,))
                 t.start()
                 self.thread_list[ip] = t
         
-            start_ip = self._incIP(start_ip)
+            start_ip = IPUtils._incIP(start_ip)
             while len(self.thread_list)>0:
-                time.sleep(3)
+                pass
         
         if ip in self.thread_list:
             del self.thread_list[ip]
         
         return self.return_ips
-
-
-
-
-            
-    def _incIP(self,ip):
-
-        """Increment ip number
-        :param ip: Ip to increment
-        """
-
-        a,b,c,d = ip.split(".")
-
-        a=int(a)
-        b=int(b)
-        c=int(c)
-        d=int(d)
-
-        if d<255:
-            d=d+1
-        elif c<255:
-            c=c+1
-            d=0
-        elif b<255:
-            b=b+1
-            d=0
-            c=0
-        elif a<255:
-            a=a+1
-            d=0
-            c=0
-            b=0
-        return "{}.{}.{}.{}".format(a,b,c,d)
-
-
-
