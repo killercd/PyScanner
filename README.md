@@ -29,14 +29,15 @@ pip uninstall pyscanner
 ### Ftp scanner
 
 ```python
-from pyscanner.ftp.ftp_scanner import *
+from psychom_scanner.ftp.ftp_scanner import *
 
 
 scanner = FtpScanner(max_thread=10,timeout=2)
-returns = scanner.scan("2.2.2.2","2.2.3.3") #startip, endip
+returns = scanner.scan("62.10.210.1","62.10.210.254")
 
 for ip in returns:
     print(ip)
+
 
 ```
 
